@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>QR Code Image</title>
+  </head>
+  <body>
+    <img id="qrImage" src="/image/{{id}}" alt="QR Code Image" />
+
+    <script>
+      // Function to update the image every second
+      function updateImage() {
+        var qrImage = document.getElementById("qrImage");
+        qrImage.src = "/image/{{id}}?" + new Date().getTime(); // Add timestamp to force image refresh
+      }
+
+      // Call the updateImage function every second
+      setInterval(updateImage, 1000);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload and Redirect</title>
+</head>
+<body>
+    <h1>Upload and Redirect</h1>
+    <form id="uploadForm">
+        <input type="file" id="fileInput">
+        <input type="submit" value="Upload">
+    </form>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    var fileInput = document.getElementById('fileInput');
+    var file = fileInput.files[0];
+    
+    var formData = new FormData();
+    formData.append('image', file);
+    
+    fetch('/upload', {
+    method: 'POST',
+    body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json(); // Read the response as JSON
+        } else {
+            throw new Error('Error uploading file');
+        }
+    })
+    .then(data => {
+        if (data.status === 'success' && data.redirect_url) {
+            window.location.href = data.redirect_url; // Redirect to the received URL
+        } else {
+            throw new Error('Error in response');
+        }
+    })
+    .catch(error => {
+        console.error(error);
+    });
+});
+
+    </script>
+</body>
+</html>
