@@ -8,14 +8,26 @@
     <img id="qrImage" src="/image/{{id}}" alt="QR Code Image" />
 
     <script>
-      // Function to update the image every second
+      // Function to update the image
       function updateImage() {
         var qrImage = document.getElementById("qrImage");
         qrImage.src = "/image/{{id}}?" + new Date().getTime(); // Add timestamp to force image refresh
       }
 
-      // Call the updateImage function every second
-      setInterval(updateImage, 1000);
+      // Function to schedule the next image update
+      function scheduleUpdate() {
+        var now = new Date();
+        var nextUpdate = Math.ceil(now / 1000) * 1000; // Round up to the next second
+        var delay = nextUpdate - now; // Calculate the delay until the next second
+
+        setTimeout(function() {
+          updateImage();
+          scheduleUpdate(); // Schedule the next update
+        }, delay);
+      }
+
+      // Start the update schedule
+      scheduleUpdate();
     </script>
   </body>
 </html>
