@@ -35,14 +35,17 @@ def BuildImage(id):
     # Paste the QR code image onto the background image
     image_with_overlay.paste(qr_code, (center_x, center_y))
 
-    now = datetime.now()
+    eastern = pytz.timezone('US/Eastern')
+
+    now = datetime.now(eastern)
+
     # Display time and date
     time_display = now.strftime('%I:%M %p')
     date_display = now.strftime("%B %d{}").format("th" if 11 <= now.day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(now.day % 10, "th"))
 
     draw = ImageDraw.Draw(image_with_overlay)
     text = time_display
-    text_font = ImageFont.truetype("arial.ttf", 180)  # Change the font and size as desired
+    text_font = ImageFont.truetype(os.path.join(current_dir, "arial.ttf"), 180)  # Change the font and size as desired
     text_color = (255, 255, 255)  # Change the text color as desired
     text_x = (background_image.width - draw.textlength(text, font=text_font)) // 2
     text_position = (text_x, 1550)  # Change the position of the text as desired
@@ -53,7 +56,7 @@ def BuildImage(id):
               stroke_fill=text_color)
 
     text = date_display
-    text_font = ImageFont.truetype("arial.ttf", 130)  # Change the font and size as desired
+    text_font = ImageFont.truetype(os.path.join(current_dir, "arial.ttf"), 130)  # Change the font and size as desired
     text_color = (0, 0, 0)  # Change the text color as desired
     text_x = (background_image.width - draw.textlength(text, font=text_font)) // 2
     text_position = (text_x, 1830)  # Change the position of the text as desired
@@ -64,7 +67,7 @@ def BuildImage(id):
               stroke_fill=text_color)
 
     text = "Alex"
-    text_font = ImageFont.truetype("arial.ttf", 280)  # Change the font and size as desired
+    text_font = ImageFont.truetype(os.path.join(current_dir, "arial.ttf"), 280)  # Change the font and size as desired
     text_color = (0, 0, 0)  # Change the text color as desired
     text_x = (background_image.width - draw.textlength(text, font=text_font)) // 2
     text_position = (text_x, 1980)  # Change the position of the text as desired

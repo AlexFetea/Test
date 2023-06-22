@@ -40,7 +40,6 @@ def upload_file():
 @app.route('/image/<id>', methods=['GET'])
 def return_image(id):
 
-    print(datetime.now())
     image_with_overlay = BuildImage(id)
     # Save the resulting image with the overlay
     output_image = BytesIO()
@@ -49,15 +48,14 @@ def return_image(id):
 
     # Create a response with cache-control headers
     response = make_response(send_file(output_image, mimetype='image/jpeg'))
-    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
+    # response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    # response.headers['Pragma'] = 'no-cache'
+    # response.headers['Expires'] = '0'
     return response
 
 
 @app.route('/<id>', methods=['GET'])
 def return_page(id):
-    print(datetime.now())
     return render_template('qrcode.html', id=id)
 
 

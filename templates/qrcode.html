@@ -9,21 +9,17 @@
 
     <script>
       // Function to update the image
-      function updateImage() {
-        var qrImage = document.getElementById("qrImage");
-        qrImage.src = "/image/{{id}}?" + new Date().getTime(); // Add timestamp to force image refresh
+      async function updateImage() {
+        const response = await fetch("/image/{{id}}?" + new Date().getTime()); // Add timestamp to force image refresh
+        const imageBlob = await response.blob();
+        const imageUrl = URL.createObjectURL(imageBlob);
+        document.getElementById("qrImage").src = imageUrl;
       }
 
       // Function to schedule the next image update
-      function scheduleUpdate() {
-        var now = new Date();
-        var nextUpdate = Math.ceil(now / 1000) * 1000; // Round up to the next second
-        var delay = nextUpdate - now; // Calculate the delay until the next second
-
-        setTimeout(function() {
-          updateImage();
-          scheduleUpdate(); // Schedule the next update
-        }, delay);
+      async function scheduleUpdate() {
+        await updateImage(); // Wait for the image to update before scheduling the next update
+        setTimeout(scheduleUpdate, 800); // Schedule the next update in 1 second
       }
 
       // Start the update schedule

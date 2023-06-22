@@ -24,7 +24,7 @@ class QRCode:
         return qr_codes[0].data.decode("utf-8")
 
     def make(id):
-        eastern = pytz.timezone('US/Central')
+        eastern = pytz.timezone('US/Eastern')
 
         now = datetime.now(eastern)
 
