@@ -1,48 +1,138 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Upload and Redirect</title>
+    <title>DLsucks</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.min.js"></script>
 </head>
 <body>
-    <h1>Upload and Redirect</h1>
-    <form id="uploadForm">
-        <input type="file" id="fileInput">
-        <input type="submit" value="Upload">
+    <title>DLsucks</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        h3 {
+            color: #373636;
+        }
+        #fileInputLabel, #cameraButton {
+            margin-bottom: 30px;
+            padding: 10px;
+            background-color: #42aa9d;
+            color: white;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            display: inline-block;
+        }
+        #cameraPreview {
+            margin-top: 20px;
+            max-width: 100%;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.min.js"></script>
+</head>
+<body>
+    <h3>Upload a friend's valid DL QR code:</h3>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        <label for="fileInput" id="fileInputLabel">Select a file</label>
     </form>
+    <h3>Scan a friend's valid DL QR code:</h3>
+    <button id="cameraButton">Use Camera</button>
+    <video id="cameraPreview" style="display: none;"></video>
+
 
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    
-    var fileInput = document.getElementById('fileInput');
-    var file = fileInput.files[0];
-    
-    var formData = new FormData();
-    formData.append('image', file);
-    
-    fetch('/upload', {
-    method: 'POST',
-    body: formData
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json(); // Read the response as JSON
-        } else {
-            throw new Error('Error uploading file');
-        }
-    })
-    .then(data => {
-        if (data.status === 'success' && data.redirect_url) {
-            window.location.href = data.redirect_url; // Redirect to the received URL
-        } else {
-            throw new Error('Error in response');
-        }
-    })
-    .catch(error => {
-        console.error(error);
-    });
-});
+        var video = document.getElementById('cameraPreview');
+        var cameraStream = null;
 
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            event.preventDefault();
+            
+            stopCamera(); // Stop the camera when a file is selected
+            
+            var fileInput = document.getElementById('fileInput');
+            var file = fileInput.files[0];
+            
+            var reader = new FileReader();
+            reader.onload = function() {
+                var image = new Image();
+                image.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    var context = canvas.getContext('2d');
+                    context.drawImage(image, 0, 0, image.width, image.height);
+                    var imageData = context.getImageData(0, 0, image.width, image.height);
+                    var code = jsQR(imageData.data, imageData.width, imageData.height);
+                    if (code) {
+                        var parts = code.data.split('@');
+                        var redirectUrl = parts[0];
+                        window.location.href = redirectUrl; // Redirect to the URL
+                    } else {
+                        console.error('No QR code found in image.');
+                    }
+                };
+                image.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('cameraButton').addEventListener('click', function() {
+            video.style.display = 'block';
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(function(stream) {
+                    cameraStream = stream; // Save the stream so it can be stopped later
+                    video.srcObject = stream;
+                    video.setAttribute('playsinline', true);// required to tell iOS safari we don't want fullscreen
+                    video.play();
+                    requestAnimationFrame(tick);
+                });
+            }
+
+            function tick() {
+                var video = document.getElementById('cameraPreview');
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    var context = canvas.getContext('2d');
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    var code = jsQR(imageData.data, imageData.width, imageData.height);
+                    if (code) {
+                        var parts = code.data.split('@');
+                        var redirectUrl = parts[0];
+                        stopCamera(); // Stop the camera when a QR code is found
+                        window.location.href = redirectUrl; // Redirect to the URL
+                    } else {
+                        requestAnimationFrame(tick);
+                    }
+                } else {
+                    requestAnimationFrame(tick);
+                }
+            }
+        });
+
+        function stopCamera() {
+            if (cameraStream) {
+                var tracks = cameraStream.getTracks();
+                for (var i = 0; i < tracks.length; i++) {
+                    tracks[i].stop();
+                }
+                cameraStream = null;
+            }
+            video.style.display = 'none';
+        }
     </script>
 </body>
 </html>

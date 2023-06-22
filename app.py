@@ -12,31 +12,6 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-
-@app.route('/background', methods=['GET'])
-def get_image():
-    return send_file("doorlist.gif", mimetype='image/gif')
-
-
-@app.route('/upload', methods=['POST', 'GET'])
-def upload_file():
-    if 'image' not in request.files:
-        return {'status': 'error', 'message': 'No image part in the request'}, 400
-
-    file = request.files['image']
-
-    if file.filename == '':
-        return {'status': 'error', 'message': 'No selected file'}, 400
-
-    try:
-        qr_code_data = QRCode.read(file)
-        uuid = qr_code_data.split("@")[0]
-        return {'status': 'success', 'redirect_url': f'/{uuid}'}, 200
-    except Exception as e:
-        return {'status': 'error', 'message': f'Error reading QR code: {str(e)}'}, 400
-
-
-
 @app.route('/image/<id>', methods=['GET'])
 def return_image(id):
 
